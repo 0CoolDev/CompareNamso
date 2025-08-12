@@ -1,11 +1,51 @@
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { rateLimitMiddleware, checkRedisConnection, closeRedisConnection } from "./middleware/rateLimit";
+import { sessionMiddleware, validateSession, closeSessionRedis } from "./middleware/session";
+import { csrfProtection, getCSRFToken } from "./middleware/csrf";
+import { globalErrorHandler } from "./middleware/errorHandler";
 
 const app = express();
+
+// Security headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Adjust for your needs
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: process.env.NODE_ENV === 'production',
+}));
+
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Session middleware (must be before CSRF)
+app.use(sessionMiddleware);
+\n// Session validation middleware - validates and refreshes sessions
+app.use(validateSession);
+
+// Apply rate limiting middleware globally
+app.use(rateLimitMiddleware);
+
+// CSRF token endpoint (before CSRF protection middleware)
+app.get('/api/csrf-token', getCSRFToken);
+
+// Apply CSRF protection to all routes except GET and specific endpoints
+app.use(csrfProtection);
+
+// Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -37,29 +77,22 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Check Redis connection on startup
+  await checkRedisConnection();
+
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  // Enhanced error handling middleware
+  app.use(globalErrorHandler);
 
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Setup Vite or static serving
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Server configuration
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen({
     port,
@@ -68,4 +101,18 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
   });
+
+  // Graceful shutdown
+  const gracefulShutdown = async (signal: string) => {
+    log(`${signal} signal received: closing HTTP server and Redis connections`);
+    server.close(() => {
+      log('HTTP server closed');
+    });
+    await closeRedisConnection();
+    await closeSessionRedis();
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 })();

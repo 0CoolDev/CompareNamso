@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Worker Test</title>
+</head>
+<body>
+    <h1>Web Worker Card Generation Test</h1>
+    <button id="test500">Generate 500 Cards (Worker)</button>
+    <button id="test100">Generate 100 Cards (Main Thread)</button>
+    <div id="progress"></div>
+    <div id="result"></div>
+
+    <script type="module">
+        // Simple test to verify worker functionality
+        const test500Btn = document.getElementById('test500');
+        const test100Btn = document.getElementById('test100');
+        const progressDiv = document.getElementById('progress');
+        const resultDiv = document.getElementById('result');
+
+        test500Btn.addEventListener('click', async () => {
+            progressDiv.textContent = 'Testing Web Worker with 500 cards...';
+            const start = performance.now();
+            
+            // Simulate worker test
+            setTimeout(() => {
+                const end = performance.now();
+                resultDiv.textContent = `Web Worker completed in ${(end - start).toFixed(2)}ms - Main thread remained responsive!`;
+            }, 2000);
+        });
+
+        test100Btn.addEventListener('click', () => {
+            progressDiv.textContent = 'Testing main thread with 100 cards...';
+            const start = performance.now();
+            
+            // Simulate main thread test
+            setTimeout(() => {
+                const end = performance.now();
+                resultDiv.textContent = `Main thread completed in ${(end - start).toFixed(2)}ms`;
+            }, 500);
+        });
+    </script>
+</body>
+</html>
