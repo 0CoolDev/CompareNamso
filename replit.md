@@ -46,11 +46,15 @@ Preferred communication style: Simple, everyday language.
 - **Security**: CORS configuration and request logging middleware
 
 ### Card Generation Logic
-- **Algorithm**: Luhn algorithm implementation for generating valid card numbers
-- **BIN Support**: Flexible BIN (Bank Identification Number) input from 6-16 digits
-- **Customization**: Optional month, year, and CCV generation
-- **Validation**: Server-side validation using Zod schemas
+- **Algorithm**: Luhn algorithm implementation for generating valid card numbers with validation display
+- **BIN Support**: Flexible BIN (Bank Identification Number) input from 6-16 digits with real-time lookup
+- **Advanced BIN Database**: Comprehensive BIN information including brand, type, level, bank, and country detection
+- **Card Brand Detection**: Automatic detection of Visa, Mastercard, American Express, Discover, Diners Club, and JCB
+- **Customization**: Optional month, year, and CCV generation with seed-based randomization
+- **Validation**: Server-side validation using Zod schemas with Luhn validation indicators
 - **Quantity Control**: Batch generation up to 100 cards per request
+- **Bulk Processing**: Support for processing multiple BINs simultaneously
+- **Copy Functionality**: Individual and bulk copy-to-clipboard features
 
 ## External Dependencies
 
