@@ -33,50 +33,173 @@ function detectCardBrand(cardNumber: string): string {
   const firstTwo = cardNumber.substring(0, 2);
   const firstThree = cardNumber.substring(0, 3);
   const firstFour = cardNumber.substring(0, 4);
+  const firstSix = cardNumber.substring(0, 6);
 
+  // Visa
   if (firstDigit === '4') return 'Visa';
+  
+  // Mastercard (legacy and new ranges)
   if (firstTwo >= '51' && firstTwo <= '55') return 'Mastercard';
+  if (firstFour >= '2221' && firstFour <= '2720') return 'Mastercard';
+  
+  // American Express
   if (firstTwo === '34' || firstTwo === '37') return 'American Express';
-  if (firstFour === '6011' || firstTwo === '65') return 'Discover';
-  if (firstThree >= '300' && firstThree <= '305') return 'Diners Club';
-  if (firstTwo === '35') return 'JCB';
+  
+  // Discover
+  if (firstFour === '6011' || firstTwo === '65' || 
+      (firstSix >= '622126' && firstSix <= '622925') ||
+      (firstThree >= '644' && firstThree <= '649')) return 'Discover';
+  
+  // Diners Club
+  if (firstThree >= '300' && firstThree <= '305' || 
+      firstTwo === '36' || firstTwo === '38') return 'Diners Club';
+  
+  // JCB
+  if (firstTwo === '35' || (firstFour >= '3528' && firstFour <= '3589')) return 'JCB';
+  
+  // UnionPay
+  if (firstTwo === '62' || firstThree === '621') return 'UnionPay';
+  
+  // Maestro
+  if (firstFour === '5018' || firstFour === '5020' || 
+      firstFour === '5038' || firstFour === '5893' ||
+      firstFour === '6304' || firstFour === '6759' ||
+      firstFour === '6761' || firstFour === '6762' ||
+      firstFour === '6763') return 'Maestro';
   
   return 'Unknown';
 }
 
-// BIN Information Database
+// Comprehensive BIN Information Database
 function getBinInfo(bin: string): BinInfo {
   const binData: Record<string, Partial<BinInfo>> = {
-    // Visa
-    '4': { brand: 'Visa', type: 'Credit' },
-    '40': { brand: 'Visa', type: 'Credit', level: 'Classic' },
-    '41': { brand: 'Visa', type: 'Credit', level: 'Gold' },
-    '42': { brand: 'Visa', type: 'Credit', level: 'Classic' },
-    '43': { brand: 'Visa', type: 'Credit', level: 'Platinum' },
-    '44': { brand: 'Visa', type: 'Credit', level: 'Standard' },
-    '45': { brand: 'Visa', type: 'Credit', level: 'Gold' },
-    '46': { brand: 'Visa', type: 'Credit', level: 'Standard' },
-    '47': { brand: 'Visa', type: 'Credit', level: 'Platinum' },
-    '48': { brand: 'Visa', type: 'Credit', level: 'Standard' },
-    '49': { brand: 'Visa', type: 'Credit', level: 'Premium' },
+    // JP Morgan Chase (Major US Bank)
+    '414720': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'JPMorgan Chase Bank', country: 'United States' },
+    '414709': { brand: 'Visa', type: 'Credit', level: 'Platinum', bank: 'JPMorgan Chase Bank', country: 'United States' },
+    '476173': { brand: 'Visa', type: 'Debit', level: 'Standard', bank: 'JPMorgan Chase Bank', country: 'United States' },
+    '524091': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'JPMorgan Chase Bank', country: 'United States' },
+    '547778': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'JPMorgan Chase Bank', country: 'United States' },
     
-    // Mastercard
-    '51': { brand: 'Mastercard', type: 'Credit', level: 'Standard' },
-    '52': { brand: 'Mastercard', type: 'Credit', level: 'Gold' },
-    '53': { brand: 'Mastercard', type: 'Credit', level: 'Platinum' },
-    '54': { brand: 'Mastercard', type: 'Credit', level: 'World' },
-    '55': { brand: 'Mastercard', type: 'Credit', level: 'World Elite' },
+    // Bank of America
+    '453267': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'Bank of America', country: 'United States' },
+    '453246': { brand: 'Visa', type: 'Credit', level: 'Platinum', bank: 'Bank of America', country: 'United States' },
+    '480043': { brand: 'Visa', type: 'Debit', level: 'Standard', bank: 'Bank of America', country: 'United States' },
+    '552426': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'Bank of America', country: 'United States' },
+    '540131': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Bank of America', country: 'United States' },
+    
+    // Wells Fargo
+    '455670': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'Wells Fargo Bank', country: 'United States' },
+    '455671': { brand: 'Visa', type: 'Credit', level: 'Platinum', bank: 'Wells Fargo Bank', country: 'United States' },
+    '414398': { brand: 'Visa', type: 'Debit', level: 'Standard', bank: 'Wells Fargo Bank', country: 'United States' },
+    '529983': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'Wells Fargo Bank', country: 'United States' },
+    '541333': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Wells Fargo Bank', country: 'United States' },
+    
+    // Citibank
+    '424631': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'Citibank', country: 'United States' },
+    '438857': { brand: 'Visa', type: 'Credit', level: 'Platinum', bank: 'Citibank', country: 'United States' },
+    '414721': { brand: 'Visa', type: 'Debit', level: 'Standard', bank: 'Citibank', country: 'United States' },
+    '545301': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'Citibank', country: 'United States' },
+    '533978': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Citibank', country: 'United States' },
+    
+    // Capital One
+    '414755': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'Capital One', country: 'United States' },
+    '438854': { brand: 'Visa', type: 'Credit', level: 'Platinum', bank: 'Capital One', country: 'United States' },
+    '510510': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'Capital One', country: 'United States' },
+    '548943': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Capital One', country: 'United States' },
     
     // American Express
-    '34': { brand: 'American Express', type: 'Credit', level: 'Gold' },
-    '37': { brand: 'American Express', type: 'Credit', level: 'Platinum' },
+    '340000': { brand: 'American Express', type: 'Credit', level: 'Green', bank: 'American Express', country: 'United States' },
+    '341111': { brand: 'American Express', type: 'Credit', level: 'Gold', bank: 'American Express', country: 'United States' },
+    '342222': { brand: 'American Express', type: 'Credit', level: 'Platinum', bank: 'American Express', country: 'United States' },
+    '343434': { brand: 'American Express', type: 'Credit', level: 'Centurion', bank: 'American Express', country: 'United States' },
+    '371144': { brand: 'American Express', type: 'Credit', level: 'Gold', bank: 'American Express', country: 'United States' },
+    '378282': { brand: 'American Express', type: 'Credit', level: 'Platinum', bank: 'American Express', country: 'United States' },
     
     // Discover
-    '6011': { brand: 'Discover', type: 'Credit', level: 'Standard' },
-    '65': { brand: 'Discover', type: 'Credit', level: 'Standard' },
+    '601100': { brand: 'Discover', type: 'Credit', level: 'Standard', bank: 'Discover Financial', country: 'United States' },
+    '601136': { brand: 'Discover', type: 'Credit', level: 'Premium', bank: 'Discover Financial', country: 'United States' },
+    '644406': { brand: 'Discover', type: 'Credit', level: 'Cashback', bank: 'Discover Financial', country: 'United States' },
+    '650485': { brand: 'Discover', type: 'Credit', level: 'Miles', bank: 'Discover Financial', country: 'United States' },
+    
+    // HSBC
+    '404117': { brand: 'Visa', type: 'Credit', level: 'Premier', bank: 'HSBC Bank USA', country: 'United States' },
+    '520000': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'HSBC', country: 'United Kingdom' },
+    '527900': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'HSBC', country: 'United Kingdom' },
+    
+    // Barclays
+    '410153': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'Barclays Bank', country: 'United Kingdom' },
+    '423734': { brand: 'Visa', type: 'Credit', level: 'Premier', bank: 'Barclays Bank', country: 'United Kingdom' },
+    '559978': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'Barclays Bank', country: 'United Kingdom' },
+    
+    // Deutsche Bank
+    '492901': { brand: 'Visa', type: 'Credit', level: 'Premium', bank: 'Deutsche Bank', country: 'Germany' },
+    '531851': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Deutsche Bank', country: 'Germany' },
+    
+    // BNP Paribas
+    '497011': { brand: 'Visa', type: 'Credit', level: 'Premier', bank: 'BNP Paribas', country: 'France' },
+    '540854': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'BNP Paribas', country: 'France' },
+    
+    // Santander
+    '434009': { brand: 'Visa', type: 'Credit', level: 'Classic', bank: 'Santander Bank', country: 'Spain' },
+    '555188': { brand: 'Mastercard', type: 'Credit', level: 'Standard', bank: 'Santander Bank', country: 'Spain' },
+    
+    // ING Bank
+    '493698': { brand: 'Visa', type: 'Debit', level: 'Standard', bank: 'ING Bank', country: 'Netherlands' },
+    '515393': { brand: 'Mastercard', type: 'Debit', level: 'Standard', bank: 'ING Bank', country: 'Netherlands' },
+    
+    // Credit Suisse
+    '435975': { brand: 'Visa', type: 'Credit', level: 'Premium', bank: 'Credit Suisse', country: 'Switzerland' },
+    '535825': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Credit Suisse', country: 'Switzerland' },
+    
+    // UBS
+    '404738': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'UBS AG', country: 'Switzerland' },
+    '540442': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'UBS AG', country: 'Switzerland' },
+    
+    // Royal Bank of Canada
+    '450875': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'Royal Bank of Canada', country: 'Canada' },
+    '512625': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'Royal Bank of Canada', country: 'Canada' },
+    
+    // TD Bank
+    '489537': { brand: 'Visa', type: 'Credit', level: 'Premier', bank: 'TD Bank', country: 'Canada' },
+    '541704': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'TD Bank', country: 'Canada' },
+    
+    // Bank of Montreal
+    '418760': { brand: 'Visa', type: 'Credit', level: 'Premium', bank: 'Bank of Montreal', country: 'Canada' },
+    '515915': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Bank of Montreal', country: 'Canada' },
+    
+    // ANZ Bank (Australia)
+    '400808': { brand: 'Visa', type: 'Credit', level: 'Premier', bank: 'ANZ Bank', country: 'Australia' },
+    '512129': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'ANZ Bank', country: 'Australia' },
+    
+    // Commonwealth Bank of Australia
+    '421589': { brand: 'Visa', type: 'Credit', level: 'Signature', bank: 'Commonwealth Bank of Australia', country: 'Australia' },
+    '527571': { brand: 'Mastercard', type: 'Credit', level: 'World Elite', bank: 'Commonwealth Bank of Australia', country: 'Australia' },
+    
+    // Westpac Banking Corporation
+    '453085': { brand: 'Visa', type: 'Credit', level: 'Premium', bank: 'Westpac Banking Corporation', country: 'Australia' },
+    '540138': { brand: 'Mastercard', type: 'Credit', level: 'World', bank: 'Westpac Banking Corporation', country: 'Australia' },
+    
+    // JCB (Japan Credit Bureau)
+    '354800': { brand: 'JCB', type: 'Credit', level: 'Standard', bank: 'JCB Co., Ltd.', country: 'Japan' },
+    '354900': { brand: 'JCB', type: 'Credit', level: 'Gold', bank: 'JCB Co., Ltd.', country: 'Japan' },
+    
+    // Union Pay (China)
+    '621095': { brand: 'UnionPay', type: 'Credit', level: 'Standard', bank: 'China UnionPay', country: 'China' },
+    '622018': { brand: 'UnionPay', type: 'Debit', level: 'Standard', bank: 'China UnionPay', country: 'China' },
+    
+    // Diners Club
+    '300000': { brand: 'Diners Club', type: 'Credit', level: 'Standard', bank: 'Diners Club International', country: 'United States' },
+    '301111': { brand: 'Diners Club', type: 'Credit', level: 'Premium', bank: 'Diners Club International', country: 'United States' },
+    '305555': { brand: 'Diners Club', type: 'Credit', level: 'Signature', bank: 'Diners Club International', country: 'United States' },
+    
+    // Generic patterns by first digits (fallback)
+    '4': { brand: 'Visa', type: 'Credit', level: 'Standard' },
+    '5': { brand: 'Mastercard', type: 'Credit', level: 'Standard' },
+    '3': { brand: 'American Express', type: 'Credit', level: 'Standard' },
+    '6': { brand: 'Discover', type: 'Credit', level: 'Standard' },
   };
 
-  // Find the best match (longest prefix)
+  // Find the best match (longest prefix first)
   let bestMatch = '';
   for (const prefix in binData) {
     if (bin.startsWith(prefix) && prefix.length > bestMatch.length) {
@@ -87,49 +210,191 @@ function getBinInfo(bin: string): BinInfo {
   const baseInfo = binData[bestMatch] || {};
   return {
     bin,
-    brand: baseInfo.brand || 'Unknown',
+    brand: baseInfo.brand || detectCardBrand(bin),
     type: baseInfo.type || 'Credit',
     level: baseInfo.level || 'Standard',
-    bank: getBankName(bin),
-    country: getCountryFromBin(bin)
+    bank: baseInfo.bank || getBankName(bin),
+    country: baseInfo.country || getCountryFromBin(bin)
   };
 }
 
 function getBankName(bin: string): string {
   const bankData: Record<string, string> = {
+    // JPMorgan Chase patterns
+    '414720': 'JPMorgan Chase Bank',
+    '414709': 'JPMorgan Chase Bank', 
+    '476173': 'JPMorgan Chase Bank',
+    '524091': 'JPMorgan Chase Bank',
+    '547778': 'JPMorgan Chase Bank',
+    
+    // Bank of America patterns
+    '453267': 'Bank of America',
+    '453246': 'Bank of America',
+    '480043': 'Bank of America',
+    '552426': 'Bank of America',
+    '540131': 'Bank of America',
+    '4532': 'Bank of America',
+    
+    // Wells Fargo patterns
+    '455670': 'Wells Fargo Bank',
+    '455671': 'Wells Fargo Bank',
+    '414398': 'Wells Fargo Bank',
+    '529983': 'Wells Fargo Bank',
+    '541333': 'Wells Fargo Bank',
+    '4556': 'Wells Fargo Bank',
+    
+    // Citibank patterns
+    '424631': 'Citibank',
+    '438857': 'Citibank',
+    '414721': 'Citibank',
+    '545301': 'Citibank',
+    '533978': 'Citibank',
+    '4929': 'Citibank',
+    
+    // Capital One patterns
+    '414755': 'Capital One',
+    '438854': 'Capital One',
+    '510510': 'Capital One',
+    '548943': 'Capital One',
+    '5105': 'Capital One',
+    
+    // American Express patterns  
+    '340000': 'American Express',
+    '341111': 'American Express',
+    '342222': 'American Express',
+    '343434': 'American Express',
+    '371144': 'American Express',
+    '378282': 'American Express',
+    '3782': 'American Express',
+    '3714': 'American Express',
+    '34': 'American Express',
+    '37': 'American Express',
+    
+    // Discover patterns
+    '601100': 'Discover Financial',
+    '601136': 'Discover Financial',
+    '644406': 'Discover Financial',
+    '650485': 'Discover Financial',
+    '6011': 'Discover Financial',
+    '65': 'Discover Financial',
+    
+    // HSBC patterns
+    '404117': 'HSBC Bank USA',
+    '520000': 'HSBC',
+    '527900': 'HSBC',
+    '5200': 'HSBC',
+    
+    // Test cards
     '4000': 'Test Bank',
     '4111': 'Visa Test Card',
-    '4207': 'Chase Bank',
-    '4532': 'Bank of America',
-    '4556': 'Wells Fargo',
-    '4929': 'Citibank',
     '5555': 'Mastercard Test Card',
-    '5105': 'Capital One',
-    '5200': 'HSBC',
-    '5454': 'American Express Bank',
-    '3782': 'American Express',
-    '3714': 'American Express Gold',
   };
 
+  // Find longest matching prefix
+  let bestMatch = '';
   for (const prefix in bankData) {
-    if (bin.startsWith(prefix)) {
-      return bankData[prefix];
+    if (bin.startsWith(prefix) && prefix.length > bestMatch.length) {
+      bestMatch = prefix;
     }
+  }
+  
+  if (bestMatch) {
+    return bankData[bestMatch];
   }
   
   return 'Unknown Bank';
 }
 
 function getCountryFromBin(bin: string): string {
-  // Simplified country detection based on common BIN patterns
+  // Advanced country detection based on specific BIN patterns
   const countryData: Record<string, string> = {
+    // United States patterns
+    '414720': 'United States', // JPMorgan Chase
+    '414709': 'United States',
+    '453267': 'United States', // Bank of America
+    '453246': 'United States',
+    '455670': 'United States', // Wells Fargo
+    '424631': 'United States', // Citibank
+    '414755': 'United States', // Capital One
+    '340000': 'United States', // American Express
+    '341111': 'United States',
+    '371144': 'United States',
+    '601100': 'United States', // Discover
+    
+    // United Kingdom patterns
+    '520000': 'United Kingdom', // HSBC
+    '527900': 'United Kingdom',
+    '410153': 'United Kingdom', // Barclays
+    '423734': 'United Kingdom',
+    '559978': 'United Kingdom',
+    
+    // Germany patterns
+    '492901': 'Germany', // Deutsche Bank
+    '531851': 'Germany',
+    
+    // France patterns
+    '497011': 'France', // BNP Paribas
+    '540854': 'France',
+    
+    // Spain patterns
+    '434009': 'Spain', // Santander
+    '555188': 'Spain',
+    
+    // Netherlands patterns
+    '493698': 'Netherlands', // ING Bank
+    '515393': 'Netherlands',
+    
+    // Switzerland patterns
+    '435975': 'Switzerland', // Credit Suisse
+    '535825': 'Switzerland',
+    '404738': 'Switzerland', // UBS
+    '540442': 'Switzerland',
+    
+    // Canada patterns
+    '450875': 'Canada', // Royal Bank of Canada
+    '512625': 'Canada',
+    '489537': 'Canada', // TD Bank
+    '541704': 'Canada',
+    '418760': 'Canada', // Bank of Montreal
+    '515915': 'Canada',
+    
+    // Australia patterns
+    '400808': 'Australia', // ANZ Bank
+    '512129': 'Australia',
+    '421589': 'Australia', // Commonwealth Bank
+    '527571': 'Australia',
+    '453085': 'Australia', // Westpac
+    '540138': 'Australia',
+    
+    // Japan patterns
+    '354800': 'Japan', // JCB
+    '354900': 'Japan',
+    
+    // China patterns
+    '621095': 'China', // UnionPay
+    '622018': 'China',
+    
+    // Generic patterns (fallback)
     '4': 'United States',
-    '5': 'United States', 
-    '3': 'United States',
-    '6': 'United States'
+    '5': 'United States',
+    '34': 'United States',
+    '37': 'United States',
+    '6011': 'United States',
+    '65': 'United States',
+    '30': 'United States',
+    '35': 'Japan',
+    '62': 'China'
   };
   
-  return countryData[bin[0]] || 'Unknown';
+  // Find longest matching prefix
+  let bestMatch = '';
+  for (const prefix in countryData) {
+    if (bin.startsWith(prefix) && prefix.length > bestMatch.length) {
+      bestMatch = prefix;
+    }
+  }
+  
+  return countryData[bestMatch] || 'Unknown';
 }
 
 // Polynomial Random Number Generator with Seed Support

@@ -111,11 +111,19 @@ export default function Generator() {
       case 'visa':
         return '💳';
       case 'mastercard':
-        return '🔶';
+        return '🔴';
       case 'american express':
-        return '🟢';
+        return '🔵';
       case 'discover':
-        return '🔍';
+        return '🟠';
+      case 'diners club':
+        return '⚪';
+      case 'jcb':
+        return '🟢';
+      case 'unionpay':
+        return '🔵';
+      case 'maestro':
+        return '🔴';
       default:
         return '💳';
     }
