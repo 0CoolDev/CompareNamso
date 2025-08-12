@@ -34,4 +34,12 @@ export default defineConfig({
       deny: ["**/.*"],
     },
   },
+  // Worker configuration
+  worker: {
+    format: 'es',
+    plugins: () => [],
+  },
+  optimizeDeps: {
+    include: ['comlink'],
+  },
 });
