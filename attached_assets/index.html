@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namso GEN | MissNullMe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #2c2c2c;
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #8b5cf6, #a855f7);
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .container {
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .form-section, .result-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #a855f7;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            background-color: #3c3c3c;
+            border: 1px solid #4c4c4c;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+        
+        .date-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .date-row .form-group {
+            flex: 1;
+        }
+        
+        .generate-btn, .check-btn, .lookup-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #8b5cf6, #a855f7);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .generate-btn:hover, .check-btn:hover, .lookup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .button-row button {
+            flex: 1;
+        }
+        
+        .result-box {
+            width: 100%;
+            padding: 15px;
+            background-color: #3c3c3c;
+            border: 1px solid #4c4c4c;
+            border-radius: 8px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            white-space: pre-line;
+            word-wrap: normal;
+            line-height: 1.5;
+        }
+        
+        h2 {
+            color: #a855f7;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .bin-info {
+            background-color: #3c3c3c;
+            border: 1px solid #4c4c4c;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .bin-info div {
+            margin-bottom: 8px;
+        }
+        
+        .bin-info span {
+            color: #a855f7;
+            font-weight: bold;
+        }
+        
+        /* Auto BIN Lookup Popup - Inline Slide */
+        .bin-popup {
+            background-color: #1c1c1c;
+            border: 2px solid #a855f7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+        }
+        
+        .bin-popup.active {
+            max-height: 200px;
+            opacity: 1;
+        }
+        
+        .bin-popup-title {
+            color: #a855f7;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .bin-popup-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            padding: 3px 0;
+        }
+        
+        .bin-popup-label {
+            color: #888;
+        }
+        
+        .bin-popup-value {
+            color: white;
+            font-weight: 500;
+        }
+        
+        .bin-popup-popular {
+            background: linear-gradient(90deg, #8b5cf6, #a855f7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        
+        .footer {
+            background-color: #1c1c1c;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .footer a {
+            color: #a855f7;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Scrollbar styling */
+        .result-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .result-box::-webkit-scrollbar-track {
+            background: #2c2c2c;
+        }
+        
+        .result-box::-webkit-scrollbar-thumb {
+            background: #4c4c4c;
+            border-radius: 4px;
+        }
+        
+        .result-box::-webkit-scrollbar-thumb:hover {
+            background: #5c5c5c;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Namso GEN | MissNullMe
+    </div>
+    
+    <div class="container">
+        <div class="main-content">
+            <div class="form-section">
+                <h2>Card Generator</h2>
+                <form id="cardGeneratorForm">
+                    <div class="form-group">
+                        <label for="bin">BIN</label>
+                        <input type="text" id="bin" name="bin" placeholder="Enter BIN (e.g., 450125xxxxxxxxxx)" required>
+                    </div>
+                    
+                    <div id="binPopup" class="bin-popup">
+                        <div class="bin-popup-title">BIN Information</div>
+                        <div class="bin-popup-item">
+                            <span class="bin-popup-label">Bank:</span>
+                            <span class="bin-popup-value" id="popupBank">-</span>
+                        </div>
+                        <div class="bin-popup-item">
+                            <span class="bin-popup-label">Brand:</span>
+                            <span class="bin-popup-value" id="popupBrand">-</span>
+                        </div>
+                        <div class="bin-popup-item">
+                            <span class="bin-popup-label">Type:</span>
+                            <span class="bin-popup-value" id="popupType">-</span>
+                        </div>
+                        <div class="bin-popup-item">
+                            <span class="bin-popup-label">Country:</span>
+                            <span class="bin-popup-value" id="popupCountry">-</span>
+                        </div>
+                        <div id="popupPopular" style="display: none;">
+                            <span class="bin-popup-popular">⭐ POPULAR INSTITUTION</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Date</label>
+                        <div class="date-row">
+                            <div class="form-group">
+                                <select id="month" name="month">
+                                    <option value="">Random</option>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <select id="year" name="year">
+                                    <option value="">Random</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                    <option value="2029">2029</option>
+                                    <option value="2030">2030</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="date-row">
+                        <div class="form-group">
+                            <label for="ccv2">CCV2</label>
+                            <input type="text" id="ccv2" name="ccv2" placeholder="Leave blank to randomize" maxlength="4">
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" id="quantity" name="quantity" value="10" min="1" max="100">
+                        </div>
+                    </div>
+                    
+                    <div class="button-row">
+                        <button type="submit" class="generate-btn">Generate Cards</button>
+                        <button type="button" class="check-btn" onclick="checkCards()">Check</button>
+                    </div>
+                </form>
+                
+                <h2 style="margin-top: 30px;">BIN Lookup</h2>
+                <div class="form-group">
+                    <input type="text" id="lookupBin" placeholder="Enter BIN to lookup (first 6-8 digits)">
+                </div>
+                <button type="button" class="lookup-btn" onclick="lookupBin()">Lookup BIN</button>
+                
+                <div id="binInfo" class="bin-info" style="display: none;">
+                    <div><span>Bank:</span> <span id="bankName">-</span></div>
+                    <div><span>Brand:</span> <span id="brandName">-</span></div>
+                    <div><span>Type:</span> <span id="cardType">-</span></div>
+                    <div><span>Level:</span> <span id="cardLevel">-</span></div>
+                    <div><span>Country:</span> <span id="country">-</span></div>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h2>Result</h2>
+                <div class="result-box" id="result">Generated card numbers will appear here...</div>
+                
+                <h2>Checked</h2>
+                <div class="result-box" id="checked">Checked results will appear here...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        © 2025 NullMe Namso Generator | For Testing and Developmental Purposes Only<br>
+        <a href="#">NullMe</a>
+    </div>
+    
+    <script>
+        // Popular institutions database
+        const popularInstitutions = {
+            '420767': { bank: 'JPMorgan Chase', brand: 'VISA', type: 'DEBIT', country: 'United States', popular: true },
+            '450125': { bank: 'Wells Fargo', brand: 'VISA', type: 'CREDIT', country: 'United States', popular: true },
+            '414720': { bank: 'Chase Bank', brand: 'VISA', type: 'DEBIT', country: 'United States', popular: true },
+            '424631': { bank: 'Capital One', brand: 'VISA', type: 'CREDIT', country: 'United States', popular: true },
+            '516730': { bank: 'Bank of America', brand: 'MASTERCARD', type: 'CREDIT', country: 'United States', popular: true },
+            '540127': { bank: 'Citibank', brand: 'MASTERCARD', type: 'CREDIT', country: 'United States', popular: true },
+            '476164': { bank: 'PNC Bank', brand: 'VISA', type: 'DEBIT', country: 'United States', popular: true },
+            '486236': { bank: 'US Bank', brand: 'VISA', type: 'DEBIT', country: 'United States', popular: false },
+            '374245': { bank: 'American Express', brand: 'AMEX', type: 'CREDIT', country: 'United States', popular: true },
+            '371449': { bank: 'American Express', brand: 'AMEX', type: 'CREDIT', country: 'United States', popular: true }
+        };
+        
+        // Mock BIN database for demonstration
+        const binDatabase = {
+            ...popularInstitutions,
+            '453211': { bank: 'Community Bank', brand: 'VISA', type: 'DEBIT', country: 'United States', popular: false },
+            '523456': { bank: 'Regional Credit Union', brand: 'MASTERCARD', type: 'CREDIT', country: 'United States', popular: false },
+            '601100': { bank: 'Discover', brand: 'DISCOVER', type: 'CREDIT', country: 'United States', popular: true }
+        };
+        
+        // Auto BIN lookup on input
+        let lookupTimeout;
+        document.getElementById('bin').addEventListener('input', function(e) {
+            const bin = e.target.value.replace(/\s/g, '').replace(/x/gi, '');
+            const popup = document.getElementById('binPopup');
+            
+            clearTimeout(lookupTimeout);
+            
+            if (bin.length >= 6) {
+                lookupTimeout = setTimeout(() => {
+                    const binPrefix = bin.substring(0, 6);
+                    const binData = binDatabase[binPrefix] || {
+                        bank: 'Unknown Bank',
+                        brand: detectCardBrand(binPrefix),
+                        type: 'Unknown',
+                        country: 'Unknown',
+                        popular: false
+                    };
+                    
+                    document.getElementById('popupBank').textContent = binData.bank;
+                    document.getElementById('popupBrand').textContent = binData.brand;
+                    document.getElementById('popupType').textContent = binData.type;
+                    document.getElementById('popupCountry').textContent = binData.country;
+                    
+                    const popularDiv = document.getElementById('popupPopular');
+                    if (binData.popular) {
+                        popularDiv.style.display = 'block';
+                    } else {
+                        popularDiv.style.display = 'none';
+                    }
+                    
+                    popup.classList.add('active');
+                }, 300);
+            } else {
+                popup.classList.remove('active');
+            }
+        });
+        
+        // Hide popup when BIN input is cleared or less than 6 digits
+        document.getElementById('bin').addEventListener('blur', function(e) {
+            const bin = e.target.value.replace(/\s/g, '').replace(/x/gi, '');
+            if (bin.length < 6) {
+                setTimeout(() => {
+                    document.getElementById('binPopup').classList.remove('active');
+                }, 200);
+            }
+        });
+        
+        // Detect card brand based on BIN
+        function detectCardBrand(bin) {
+            const firstDigit = bin[0];
+            const firstTwo = bin.substring(0, 2);
+            const firstFour = bin.substring(0, 4);
+            
+            if (firstDigit === '4') return 'VISA';
+            if (['51', '52', '53', '54', '55'].includes(firstTwo)) return 'MASTERCARD';
+            if (['34', '37'].includes(firstTwo)) return 'AMEX';
+            if (firstFour === '6011' || firstTwo === '65') return 'DISCOVER';
+            if (['35'].includes(firstTwo)) return 'JCB';
+            if (['50', '56', '57', '58', '60'].includes(firstTwo)) return 'MAESTRO';
+            
+            return 'UNKNOWN';
+        }
+        
+        // Luhn algorithm for card validation
+        function luhnCheck(cardNumber) {
+            let sum = 0;
+            let isEven = false;
+            
+            for (let i = cardNumber.length - 1; i >= 0; i--) {
+                let digit = parseInt(cardNumber[i]);
+                
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+                
+                sum += digit;
+                isEven = !isEven;
+            }
+            
+            return sum % 10 === 0;
+        }
+        
+        // Generate random number
+        function randomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Generate cards
+        document.getElementById('cardGeneratorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const bin = document.getElementById('bin').value.replace(/\s/g, '');
+            const month = document.getElementById('month').value;
+            const year = document.getElementById('year').value;
+            const ccv2 = document.getElementById('ccv2').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            
+            if (!bin || bin.length < 6) {
+                alert('Please enter a valid BIN (minimum 6 digits)');
+                return;
+            }
+            
+            let results = [];
+            
+            for (let i = 0; i < quantity; i++) {
+                let cardNumber = bin;
+                
+                // Fill x's with random digits
+                while (cardNumber.includes('x') || cardNumber.includes('X')) {
+                    cardNumber = cardNumber.replace(/x|X/, randomNumber(0, 9));
+                }
+                
+                // Ensure card number is 16 digits
+                while (cardNumber.length < 15) {
+                    cardNumber += randomNumber(0, 9);
+                }
+                
+                // Calculate and add Luhn check digit
+                let tempCard = cardNumber;
+                let checkDigit = 0;
+                for (let j = 0; j < 10; j++) {
+                    if (luhnCheck(tempCard + j)) {
+                        checkDigit = j;
+                        break;
+                    }
+                }
+                cardNumber = tempCard + checkDigit;
+                
+                // Generate expiry date
+                let expMonth = month || String(randomNumber(1, 12)).padStart(2, '0');
+                let expYear = year || String(randomNumber(2024, 2030));
+                
+                // Generate CVV
+                let cvv = ccv2 || String(randomNumber(100, 999));
+                
+                results.push(`${cardNumber}|${expMonth}|${expYear}|${cvv}`);
+            }
+            
+            document.getElementById('result').textContent = results.join('\n');
+        });
+        
+        // Check cards function
+        function checkCards() {
+            const resultText = document.getElementById('result').textContent;
+            
+            if (resultText === 'Generated card numbers will appear here...') {
+                document.getElementById('checked').textContent = 'No cards to check. Generate cards first.';
+                return;
+            }
+            
+            const cards = resultText.split('\n');
+            let checkedResults = [];
+            
+            cards.forEach(card => {
+                if (card.trim()) {
+                    const cardNumber = card.split('|')[0];
+                    const isValid = luhnCheck(cardNumber);
+                    checkedResults.push(`${card} - ${isValid ? '✓ VALID' : '✗ INVALID'}`);
+                }
+            });
+            
+            document.getElementById('checked').textContent = checkedResults.join('\n');
+        }
+        
+        // BIN Lookup function
+        async function lookupBin() {
+            const bin = document.getElementById('lookupBin').value.replace(/\s/g, '');
+            
+            if (!bin || bin.length < 6) {
+                alert('Please enter at least 6 digits of the BIN');
+                return;
+            }
+            
+            const binInfo = document.getElementById('binInfo');
+            binInfo.style.display = 'block';
+            
+            // Check in our database first
+            const binPrefix = bin.substring(0, 6);
+            const binData = binDatabase[binPrefix] || {
+                bank: 'Unknown Bank',
+                brand: detectCardBrand(binPrefix),
+                type: 'Unknown',
+                level: 'STANDARD',
+                country: 'Unknown',
+                popular: false
+            };
+            
+            document.getElementById('bankName').textContent = binData.bank + (binData.popular ? ' ⭐' : '');
+            document.getElementById('brandName').textContent = binData.brand;
+            document.getElementById('cardType').textContent = binData.type;
+            document.getElementById('cardLevel').textContent = binData.level || 'STANDARD';
+            document.getElementById('country').textContent = binData.country;
+        }
+        
+        // Allow Enter key to submit form
+        document.getElementById('bin').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('cardGeneratorForm').dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        document.getElementById('lookupBin').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                lookupBin();
+            }
+        });
+    </script>
+</body>
+</html>

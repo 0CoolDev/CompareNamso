@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namso GEN | NullMe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #2c2c2c;
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #8b5cf6, #a855f7);
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .container {
+            flex: 1;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #a855f7;
+        }
+        
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #3c3c3c;
+            border: 1px solid #4c4c4c;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+        
+        .row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .row .input-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .generate-btn, .check-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #8b5cf6, #a855f7);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .generate-btn:hover, .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+        }
+        
+        .generate-btn:active, .check-btn:active {
+            transform: translateY(0);
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .button-row button {
+            flex: 1;
+        }
+        
+        .result-box, .checked-box {
+            width: 100%;
+            padding: 15px;
+            background-color: #3c3c3c;
+            border: 1px solid #4c4c4c;
+            border-radius: 8px;
+            min-height: 150px;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .result-label, .checked-label {
+            color: #a855f7;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .footer {
+            background-color: #1c1c1c;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .footer a {
+            color: #a855f7;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Namso GEN | MissNullMe
+    </div>
+    
+    <div class="container">
+        <div class="input-group">
+            <label for="bin">BIN</label>
+            <input type="text" id="bin" placeholder="Enter BIN (e.g., 450125xxxxxxxxxx)">
+        </div>
+        
+        <div class="row">
+            <div class="input-group">
+                <label for="month">Month</label>
+                <input type="text" id="month" placeholder="Leave blank to randomize">
+            </div>
+            <div class="input-group">
+                <label for="year">Year</label>
+                <input type="text" id="year" placeholder="Leave blank to randomize">
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="input-group">
+                <label for="ccv2">CCV2</label>
+                <input type="text" id="ccv2" placeholder="Leave blank to randomize">
+            </div>
+            <div class="input-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" value="10" min="1" max="100">
+            </div>
+        </div>
+        
+        <div class="button-row">
+            <button class="generate-btn" onclick="generateCards()">Generate Cards</button>
+            <button class="check-btn" onclick="checkCards()">Check</button>
+        </div>
+        
+        <div>
+            <div class="result-label">Result</div>
+            <div class="result-box" id="result">
+                Generated card numbers will appear here...
+            </div>
+        </div>
+        
+        <div>
+            <div class="checked-label">Checked</div>
+            <div class="checked-box" id="checked">
+                Checked results will appear here...
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        © 2025 NullMe Namso Generator|For Testing and Developmental Purposes Only<br>
+        <a href="#">NullMe</a>
+    </div>
+    
+    <script>
+        // Placeholder functions for the buttons
+        function generateCards() {
+            document.getElementById('result').textContent = 'Generating cards...';
+            // Card generation logic will be added later
+        }
+        
+        function checkCards() {
+            document.getElementById('checked').textContent = 'Checking cards...';
+            // Card checking logic will be added later
+        }
+    </script>
+</body>
+</html>

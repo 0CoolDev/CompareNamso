@@ -1,0 +1,40 @@
+name: Deploy CardGenius
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: 95.217.132.221
+        username: nulladmin
+        port: 9922
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /opt/cardgenius
+          # Run the update script
+          ./update-cardgenius.sh
+          
+    - name: Verify Deployment
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: 95.217.132.221
+        username: nulladmin
+        port: 9922
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Check if the application is running
+          pm2 list | grep cardgenius.*online
+          if [ $? -eq 0 ]; then
+            echo "✅ CardGenius is running successfully"
+          else
+            echo "❌ CardGenius deployment verification failed"
+            exit 1
+          fi
