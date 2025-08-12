@@ -1,0 +1,10 @@
+{
+  "360218": { "brand": "Diners Club", "type": "Credit", "level": "Standard", "bank": "Diners Club International", "country": "United States" },
+  "360505": { "brand": "Diners Club", "type": "Credit", "level": "Premium", "bank": "Diners Club International", "country": "United States" },
+  "353011": { "brand": "JCB", "type": "Credit", "level": "Standard", "bank": "JCB International", "country": "Japan" },
+  "358901": { "brand": "JCB", "type": "Credit", "level": "Gold", "bank": "JCB International", "country": "Japan" },
+  "622126": { "brand": "UnionPay", "type": "Credit", "level": "Standard", "bank": "China UnionPay", "country": "China" },
+  "628989": { "brand": "UnionPay", "type": "Debit", "level": "Standard", "bank": "China UnionPay", "country": "China" },
+  "676770": { "brand": "Maestro", "type": "Debit", "level": "Standard", "bank": "Various Banks", "country": "International" },
+  "502121": { "brand": "Maestro", "type": "Debit", "level": "Standard", "bank": "Various Banks", "country": "International" }
+}

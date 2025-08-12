@@ -1,0 +1,7 @@
+{
+  "601100": { "brand": "Discover", "type": "Credit", "level": "Standard", "bank": "Discover Bank", "country": "United States" },
+  "601187": { "brand": "Discover", "type": "Credit", "level": "It", "bank": "Discover Bank", "country": "United States" },
+  "601140": { "brand": "Discover", "type": "Credit", "level": "Miles", "bank": "Discover Bank", "country": "United States" },
+  "650003": { "brand": "Discover", "type": "Debit", "level": "Standard", "bank": "Discover Bank", "country": "United States" },
+  "650489": { "brand": "Discover", "type": "Credit", "level": "Chrome", "bank": "Discover Bank", "country": "United States" }
+}

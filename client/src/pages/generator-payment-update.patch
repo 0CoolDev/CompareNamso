@@ -1,0 +1,21 @@
+--- generator-optimized.tsx
++++ generator-optimized.tsx
+@@ -530,6 +530,20 @@
+                 />
+               )}
+             </div>
++            
++            {/* Payment Gateway Tester */}
++            {cardResults?.cardsWithMeta && cardResults.cardsWithMeta.length > 0 && (
++              <div className="mt-6">
++                <PaymentTester 
++                  cardNumber={cardResults.cardsWithMeta[0].cardNumber}
++                  expMonth={cardResults.cardsWithMeta[0].month}
++                  expYear={cardResults.cardsWithMeta[0].year}
++                  cvv={cardResults.cardsWithMeta[0].ccv}
++                />
++              </div>
++            )}
+           </div>
+         </div>
+       </div>
