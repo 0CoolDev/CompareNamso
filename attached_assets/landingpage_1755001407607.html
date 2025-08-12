@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Namso GEN | NullMe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #2c2c2c;
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #5B21B6, #6D28D9);
+            padding: 20px 0;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .container {
+            flex: 1;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        
+        .form-section {
+            background-color: #3a3a3a;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #5B21B6;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: white;
+            color: black;
+            font-size: 14px;
+        }
+        
+        .date-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .date-row .form-group {
+            margin-bottom: 0;
+        }
+        
+        .ccv2-quantity-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .ccv2-quantity-row .form-group {
+            margin-bottom: 0;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #5B21B6, #6D28D9);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .generate-btn:hover {
+            background: linear-gradient(135deg, #4C1D95, #5B21B6);
+        }
+        
+        .result-section {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            min-height: 300px;
+            position: relative;
+        }
+        
+        .result-header {
+            color: #5B21B6;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .result-area {
+            width: 100%;
+            height: 260px;
+            background-color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 15px;
+            color: black;
+            font-family: monospace;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #ccc;
+            font-size: 12px;
+            margin-top: auto;
+        }
+        
+        .footer a {
+            color: #5B21B6;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Namso GEN | NullMe
+    </div>
+    
+    <div class="container">
+        <div class="main-content">
+            <div class="form-section">
+                <form id="cardGeneratorForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="bin">BIN</label>
+                        <input type="text" id="bin" name="bin" placeholder="Enter BIN" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Date</label>
+                        <div class="date-row">
+                            <div class="form-group">
+                                <select id="month" name="month" required>
+                                    <option value="">Random</option>
+                                    <option value="01">01</option>
+                                    <option value="02">02</option>
+                                    <option value="03">03</option>
+                                    <option value="04">04</option>
+                                    <option value="05">05</option>
+                                    <option value="06">06</option>
+                                    <option value="07">07</option>
+                                    <option value="08">08</option>
+                                    <option value="09">09</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <select id="year" name="year" required>
+                                    <option value="">Random</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                    <option value="2029">2029</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ccv2-quantity-row">
+                        <div class="form-group">
+                            <label for="ccv2">CCV2</label>
+                            <input type="text" id="ccv2" name="ccv2" placeholder="Leave blank to randomize">
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Quantity</label>
+                            <input type="number" id="quantity" name="quantity" value="10" min="1" max="100" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="generate-btn">Generate Cards</button>
+                </form>
+            </div>
+            
+            <div class="result-section">
+                <div class="result-header">Result</div>
+                <textarea class="result-area" id="resultArea" readonly>{% if generated_cards %}{% for card in generated_cards %}{{ card }}
+{% endfor %}{% endif %}</textarea>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        💀💀 2024 NullMe Namso Generator|For Testing and Developmental Purposes Only💀<br>
+        Find Me On TG Below<br>
+        <a href="#">NullMe</a>
+    </div>
+</body>
+</html>
