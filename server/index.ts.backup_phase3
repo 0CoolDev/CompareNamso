@@ -7,7 +7,6 @@ import { rateLimitMiddleware, authRateLimiter, checkRedisConnection, closeRedisC
 import { sessionMiddleware, validateSession, closeSessionRedis, sessionSecurityHeaders } from "./middleware/session";
 import { csrfProtection, getCSRFToken } from "./middleware/csrf";
 import { globalErrorHandler } from "./middleware/errorHandler";
-import { compressionMiddleware, staticMiddleware, performanceMonitoring, resourceHints } from "./middleware/performance";
 import { xssClean, sanitizeInputs, preventSQLInjection } from "./middleware/sanitization";
 
 const app = express();
@@ -15,11 +14,6 @@ const app = express();
 // Trust proxy for accurate IP addresses (important for rate limiting)
 if (process.env.TRUST_PROXY || process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
-
-// Performance middleware - compression and monitoring
-app.use(compressionMiddleware);
-app.use(performanceMonitoring);
-app.use(resourceHints);
 }
 
 // Generate nonce for CSP
@@ -166,8 +160,6 @@ app.use('/api/*', (req, res, next) => {
     await setupVite(app, server);
   } else {
     serveStatic(app);
-    // Add optimized static file serving with cache control
-    app.use(staticMiddleware(import.meta.dirname));
   }
 
   // Server configuration

@@ -1,172 +1,107 @@
-import { Request, Response, NextFunction } from 'express';
-import Redis from 'ioredis';
+import rateLimit from 'express-rate-limit';
+import { Request, Response } from 'express';
 
-// Initialize Redis client
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-const redis = new Redis(redisUrl);
-
-// Rate limit configuration
-const RATE_LIMIT_CONFIG = {
-  maxTokens: 100,        // Maximum tokens in the bucket (100 requests)
-  refillRate: 100,       // Tokens refilled per hour
-  windowMs: 3600000,     // 1 hour in milliseconds
+// Custom key generator to handle proxied requests
+const getClientIdentifier = (req: Request): string => {
+  const forwarded = req.headers['x-forwarded-for'];
+  const ip = forwarded ? 
+    (Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0].trim()) : 
+    req.socket.remoteAddress || 'unknown';
+  return ip;
 };
 
-interface TokenBucket {
-  tokens: number;
-  lastRefill: number;
-}
-
-// Helper function to get client IP (handles Cloudflare and nginx proxy)
-function getClientIp(req: Request): string {
-  // Priority order for IP detection:
-  // 1. Cloudflare connecting IP (passed by nginx as X-Real-IP)
-  // 2. X-Forwarded-For (also set by nginx from Cloudflare)
-  // 3. X-Real-IP header
-  // 4. Socket remote address
-  
-  const realIp = req.headers['x-real-ip'];
-  if (realIp && typeof realIp === 'string') {
-    return realIp;
-  }
-  
-  const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) {
-    const ips = (forwarded as string).split(',');
-    return ips[0].trim();
-  }
-  
-  // Fall back to socket IP
-  return req.socket.remoteAddress || 'unknown';
-}
-
-// Token bucket implementation
-async function getTokenBucket(key: string): Promise<TokenBucket> {
-  const data = await redis.get(key);
-  
-  if (!data) {
-    // Initialize new bucket with full tokens
-    return {
-      tokens: RATE_LIMIT_CONFIG.maxTokens,
-      lastRefill: Date.now(),
-    };
-  }
-  
-  try {
-    return JSON.parse(data);
-  } catch (e) {
-    // If parse fails, reset bucket
-    return {
-      tokens: RATE_LIMIT_CONFIG.maxTokens,
-      lastRefill: Date.now(),
-    };
-  }
-}
-
-// Refill tokens based on elapsed time
-function refillTokens(bucket: TokenBucket): TokenBucket {
-  const now = Date.now();
-  const timePassed = now - bucket.lastRefill;
-  
-  // Calculate tokens to add based on time passed
-  const tokensToAdd = Math.floor(
-    (timePassed / RATE_LIMIT_CONFIG.windowMs) * RATE_LIMIT_CONFIG.refillRate
-  );
-  
-  if (tokensToAdd > 0) {
-    bucket.tokens = Math.min(
-      bucket.tokens + tokensToAdd,
-      RATE_LIMIT_CONFIG.maxTokens
-    );
-    bucket.lastRefill = now;
-  }
-  
-  return bucket;
-}
-
-// Rate limiting middleware
-export async function rateLimitMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
+// General API rate limiter - 100 requests per 15 minutes per IP
+export const rateLimitMiddleware = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per window
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  keyGenerator: getClientIdentifier,
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      error: 'Too many requests',
+      message: 'Rate limit exceeded. Please try again later.',
+      retryAfter: Math.ceil(req.rateLimit?.resetTime ? (req.rateLimit.resetTime - Date.now()) / 1000 : 900)
+    });
+  },
+  skip: (req: Request) => {
     // Skip rate limiting for health checks
-    if (req.path === '/api/health' || req.path === '/health') {
-      return next();
-    }
-    
-    const clientIp = getClientIp(req);
-    const key = `rate_limit:${clientIp}`;
-    
-    // Get current bucket state
-    let bucket = await getTokenBucket(key);
-    
-    // Refill tokens based on elapsed time
-    bucket = refillTokens(bucket);
-    
-    // Check if request can proceed
-    if (bucket.tokens > 0) {
-      // Consume a token
-      bucket.tokens--;
-      
-      // Save updated bucket state with TTL of 2 hours
-      await redis.set(
-        key,
-        JSON.stringify(bucket),
-        'EX',
-        7200 // 2 hours TTL to clean up old entries
-      );
-      
-      // Add rate limit headers
-      res.setHeader('X-RateLimit-Limit', RATE_LIMIT_CONFIG.maxTokens.toString());
-      res.setHeader('X-RateLimit-Remaining', bucket.tokens.toString());
-      res.setHeader(
-        'X-RateLimit-Reset',
-        new Date(bucket.lastRefill + RATE_LIMIT_CONFIG.windowMs).toISOString()
-      );
-      
-      next();
-    } else {
-      // Rate limit exceeded
-      const resetTime = new Date(
-        bucket.lastRefill + RATE_LIMIT_CONFIG.windowMs
-      );
-      
-      res.setHeader('X-RateLimit-Limit', RATE_LIMIT_CONFIG.maxTokens.toString());
-      res.setHeader('X-RateLimit-Remaining', '0');
-      res.setHeader('X-RateLimit-Reset', resetTime.toISOString());
-      res.setHeader('Retry-After', Math.ceil(RATE_LIMIT_CONFIG.windowMs / 1000).toString());
-      
-      res.status(429).json({
-        error: 'Too Many Requests',
-        message: 'Rate limit exceeded. Please try again later.',
-        retryAfter: resetTime.toISOString(),
-      });
-    }
-  } catch (error) {
-    // Log error but don't block requests if Redis is down
-    console.error('Rate limiting error:', error);
-    
-    // Fail open for better availability when Redis is unavailable
-    next();
+    return req.path === '/api/health';
   }
-}
+});
 
-// Health check for Redis connection
+// Strict rate limiter for authentication endpoints - 5 attempts per 15 minutes
+export const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 requests per window for auth endpoints
+  skipSuccessfulRequests: false, // Count successful requests too
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => {
+    // Use a combination of IP and username/email for auth endpoints
+    const ip = getClientIdentifier(req);
+    const identifier = req.body?.email || req.body?.username || '';
+    return `${ip}:${identifier}`;
+  },
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      error: 'Too many authentication attempts',
+      message: 'Too many failed login attempts. Please try again later.',
+      retryAfter: Math.ceil(req.rateLimit?.resetTime ? (req.rateLimit.resetTime - Date.now()) / 1000 : 900)
+    });
+  }
+});
+
+// Webhook rate limiter - 50 requests per minute
+export const webhookRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 50, // 50 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getClientIdentifier,
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      error: 'Too many webhook requests',
+      message: 'Webhook rate limit exceeded. Please slow down.',
+      retryAfter: Math.ceil(req.rateLimit?.resetTime ? (req.rateLimit.resetTime - Date.now()) / 1000 : 60)
+    });
+  }
+});
+
+// Create card rate limiter - stricter limits for card generation
+export const cardGenerationRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // 20 card generation requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getClientIdentifier,
+  handler: (req: Request, res: Response) => {
+    res.status(429).json({
+      error: 'Too many card generation requests',
+      message: 'Card generation rate limit exceeded. Please wait before generating more cards.',
+      retryAfter: Math.ceil(req.rateLimit?.resetTime ? (req.rateLimit.resetTime - Date.now()) / 1000 : 60)
+    });
+  }
+});
+
+// Health check functions for compatibility
 export async function checkRedisConnection(): Promise<boolean> {
-  try {
-    await redis.ping();
-    console.log('✅ Redis connection successful');
-    return true;
-  } catch (error) {
-    console.error('❌ Redis connection failed:', error);
-    return false;
-  }
+  console.log('✅ Rate limiting configured with express-rate-limit (in-memory store)');
+  return true;
 }
 
-// Cleanup function for graceful shutdown
 export async function closeRedisConnection(): Promise<void> {
-  await redis.quit();
-  console.log('Redis connection closed');
+  console.log('Rate limiter using in-memory store - no external connections to close');
+}
+
+// Export type extensions for TypeScript
+declare module 'express' {
+  interface Request {
+    rateLimit?: {
+      limit: number;
+      current: number;
+      remaining: number;
+      resetTime: number;
+    };
+  }
 }
